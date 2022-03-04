@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:htl="http://www.bookmyholiday.com/hotels/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="hotels" targetNamespace="http://www.bookmyholiday.com/hotels/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.bookmyholiday.com/hotels/">
+			<xsd:complexType name="bookingTypes">
+            	<xsd:sequence>
+            		<xsd:element name="bookingtype" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="destinationType">
+            	<xsd:sequence>
+            		<xsd:element name="locationCode"
+            			type="xsd:string">
+            		</xsd:element>
+            		<xsd:element name="locationDescription" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="priceType">
+            	<xsd:sequence>
+            		<xsd:element name="baseFare" type="xsd:string"></xsd:element>
+            		<xsd:element name="taxes" type="xsd:string"></xsd:element>
+            		<xsd:element name="total" type="xsd:string"></xsd:element>
+            		<xsd:element name="bookingtype" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="rulesType">
+            	<xsd:sequence>
+            		<xsd:element name="rule" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="imagesType">
+            	<xsd:sequence>
+            		<xsd:element name="image" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+        
+            <xsd:complexType name="availableCouponsType">
+            	<xsd:sequence>
+            		<xsd:element name="code" type="xsd:string"></xsd:element>
+            		<xsd:element name="description" type="xsd:string"></xsd:element>
+            		<xsd:element name="rule" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="cancellationPolicy">
+            	<xsd:sequence>
+            		<xsd:element name="timeFrame" type="xsd:string"></xsd:element>
+            		<xsd:element name="charges" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="reschedulePolicyType">
+            	<xsd:sequence>
+            		<xsd:element name="timeFrame" type="xsd:string"></xsd:element>
+            		<xsd:element name="charges" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="hotelType">
+            	<xsd:sequence>
+            		<xsd:element name="id" type="xsd:int" maxOccurs="1"
+            			minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="name" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="number" type="xsd:string" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="description" type="xsd:string"></xsd:element>
+            		<xsd:element name="rating" type="xsd:string"></xsd:element>
+
+
+            		<xsd:element name="bookingTypes"
+            			type="htl:bookingTypes" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="startDate" type="xsd:string"></xsd:element>
+            		<xsd:element name="endDate" type="xsd:string"></xsd:element>
+            		<xsd:element name="startTime" type="xsd:string"></xsd:element>
+            		<xsd:element name="endTime" type="xsd:string"></xsd:element>
+
+            		<xsd:element name="destination"
+            			type="htl:destinationType">
+            		</xsd:element>
+            		<xsd:element name="price" type="htl:priceType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="currency" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+    
+            <xsd:complexType name="hotelDetails">
+            	<xsd:sequence>
+            		<xsd:element name="id" type="xsd:int" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="number" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="description" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="propertyhighlights"
+            			type="xsd:string" maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="rating" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="bookingtypes" type="htl:bookingTypes" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="rules" type="htl:rulesType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="images" type="htl:imagesType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="startDate" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="endDate" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="startTime" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="endTime" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="destination"
+            			type="htl:destinationType" maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="availability" type="xsd:int" maxOccurs="1" minOccurs="0"></xsd:element>
+
+
+            		<xsd:element name="roomTypes" type="htl:roomType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="bedSize" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+
+
+            		<xsd:element name="price" type="htl:priceType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="currency" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="availableCoupons"
+            			type="htl:availableCouponsType" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="cancellationPolicy"
+            			type="htl:cancellationPolicy" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="reschedulePolicy"
+            			type="htl:reschedulePolicyType" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="getHotelDetails">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:int"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getHotelDetailsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotelDetails"
+            				type="htl:hotelDetails" maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotels">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotel"
+            				type="htl:hotelDetails" maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotelsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:int"></xsd:element>
+            			<xsd:element name="message"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotels">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotels"
+            				type="htl:hotelDetails">
+            			</xsd:element>
+            			<xsd:element name="id"
+            				type="xsd:int">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotelsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="message" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotelBooking">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="bookingId" type="xsd:string"></xsd:element>
+            			<xsd:element name="hotelBookingDetails"
+            				type="htl:hotelBookingDetails">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotelBookingResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"
+            				maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            			<xsd:element name="message"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+    
+            <xsd:complexType name="hotelBookingDetails">
+            	<xsd:sequence>
+            		<xsd:element name="contactNumber" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="startdate" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="enddate" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="noOfPassengers" type="xsd:int"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="couponName" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="price" type="htl:priceType"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="noOfDays" type="xsd:int"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="noOfRooms" type="xsd:int"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="updatedRooms" type="xsd:int" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="hotelType" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="roomType" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="bedSize" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="insurance" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="serviceId" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="isCancel" type="xsd:boolean"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="availableRooms" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+        
+    
+            <xsd:element name="getHotels">
+            	<xsd:complexType>
+            		<xsd:sequence>
+            			<xsd:element name="startDate"
+            				type="xsd:string">
+            			</xsd:element>
+            			<xsd:element name="destination"
+            				type="xsd:string">
+            			</xsd:element>
+            			<xsd:element name="noOfRooms"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getHotelsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotels" type="htl:hotelType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotelBooking">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotelBooking" type="htl:addHotelBookingDetails"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotelBookingResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"
+            				maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            			<xsd:element name="message"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+    
+            <xsd:complexType name="addHotelBookingDetails">
+            	<xsd:sequence>
+            		<xsd:element name="contactNumber" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="startdate" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="enddate" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="startTime" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="endTime" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="destination" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="noOfPassengers" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="couponName" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="couponApplied" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="price" type="htl:priceType"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="noOfDays" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="noOfRooms" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="hotelType" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="roomType" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="bedSize" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="insurance" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="bookingId" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="pnr" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="username" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="fname" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="lname" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="serviceName" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="serviceNumber" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="serviceId" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="availability" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="roomType">
+            	<xsd:sequence>
+            		<xsd:element name="roomType" type="xsd:string" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="getMaxID">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getMaxIDResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getMaxBookingId">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="bookingid"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getMaxBookingIdResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="bookingid" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getAvailability">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getAvailabilityResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="availability" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="getHotelDetailsRequest">
+  	<wsdl:part name="parameters" element="htl:getHotelDetails"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getHotelDetailsResponse">
+  	<wsdl:part name="parameters" element="htl:getHotelDetailsResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addHotelsRequest">
+  	<wsdl:part name="parameters" element="htl:addHotels"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addHotelsResponse">
+  	<wsdl:part name="parameters" element="htl:addHotelsResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateHotelsRequest">
+  	<wsdl:part name="parameters" element="htl:updateHotels"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateHotelsResponse">
+  	<wsdl:part name="parameters" element="htl:updateHotelsResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateHotelBookingRequest">
+  	<wsdl:part name="parameters" element="htl:updateHotelBooking"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateHotelBookingResponse">
+  	<wsdl:part name="parameters" element="htl:updateHotelBookingResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getHotelsRequest">
+  	<wsdl:part name="parameters" element="htl:getHotels"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getHotelsResponse">
+  	<wsdl:part name="parameters" element="htl:getHotelsResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addHotelBookingRequest">
+  	<wsdl:part name="parameters" element="htl:addHotelBooking"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addHotelBookingResponse">
+  	<wsdl:part name="parameters" element="htl:addHotelBookingResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getMaxIDRequest">
+  	<wsdl:part name="parameters" element="htl:getMaxID"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getMaxIDResponse">
+  	<wsdl:part name="parameters" element="htl:getMaxIDResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getMaxBookingIdRequest">
+  	<wsdl:part name="parameters" element="htl:getMaxBookingId"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getMaxBookingIdResponse">
+  	<wsdl:part name="parameters" element="htl:getMaxBookingIdResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAvailabilityRequest">
+  	<wsdl:part name="parameters" element="htl:getAvailability"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAvailabilityResponse">
+  	<wsdl:part name="parameters" element="htl:getAvailabilityResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="hotels">
+
+    <wsdl:operation name="getHotelDetails">
+    	<wsdl:input message="htl:getHotelDetailsRequest"></wsdl:input>
+    	<wsdl:output message="htl:getHotelDetailsResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addHotels">
+    	<wsdl:input message="htl:addHotelsRequest"></wsdl:input>
+    	<wsdl:output message="htl:addHotelsResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateHotels">
+    	<wsdl:input message="htl:updateHotelsRequest"></wsdl:input>
+    	<wsdl:output message="htl:updateHotelsResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateHotelBooking">
+    	<wsdl:input message="htl:updateHotelBookingRequest"></wsdl:input>
+    	<wsdl:output message="htl:updateHotelBookingResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getHotels">
+    	<wsdl:input message="htl:getHotelsRequest"></wsdl:input>
+    	<wsdl:output message="htl:getHotelsResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addHotelBooking">
+    	<wsdl:input message="htl:addHotelBookingRequest"></wsdl:input>
+    	<wsdl:output message="htl:addHotelBookingResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMaxID">
+    	<wsdl:input message="htl:getMaxIDRequest"></wsdl:input>
+    	<wsdl:output message="htl:getMaxIDResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMaxBookingId">
+    	<wsdl:input message="htl:getMaxBookingIdRequest"></wsdl:input>
+    	<wsdl:output message="htl:getMaxBookingIdResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAvailability">
+    	<wsdl:input message="htl:getAvailabilityRequest"></wsdl:input>
+    	<wsdl:output message="htl:getAvailabilityResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="hotelsSOAP" type="htl:hotels">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getHotels">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getHotelDetails">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addHotels">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateHotels">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="updateHotelBooking">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addHotelBooking">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMaxID">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getMaxBookingId">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAvailability">
+      <soap:operation soapAction="http://www.bookmyholiday.com/hotels/getHotels"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="hotels">
+    <wsdl:port binding="htl:hotelsSOAP" name="hotelsSOAP">
+      <soap:address location="http://www.bookmyholiday.com/hotels/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

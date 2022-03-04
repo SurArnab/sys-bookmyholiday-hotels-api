@@ -1,0 +1,28 @@
+{
+  "sampleData": {
+    "f69ee0f3-f6b9-4093-9760-8e6dd56b3207": {
+      "payload": "sample_data/json.json"
+    },
+    "54197fec-6048-4e32-824d-d50c0c2598d6": {
+      "payload": "sample_data/java.dwl"
+    },
+    "da26c4b2-ce75-4c44-9eb5-02eed5054ffa": {
+      "vars-noOfDays": "sample_data/defaultstringtype.dwl",
+      "payload": "sample_data/list_java.dwl"
+    },
+    "b03be4cc-5563-4be6-b3a7-e7ea9b10bd9a": {
+      "payload": "sample_data/list_java_1.dwl"
+    },
+    "b50c3e5e-09d9-41bd-86bc-84f099d3577c": {
+      "payload": "sample_data/addhotelbooking.xml"
+    },
+    "82caa821-45fb-41c1-a7d9-32b1ad7970db": {},
+    "ae6b2459-49f2-4530-913b-a5c7d5b8a1c1": {
+      "payload": "sample_data/gethotels.xml"
+    },
+    "1b3365b6-b383-4e76-9614-96411031ce1f": {},
+    "32448d3e-361e-4f8b-b2cd-104493c4f778": {
+      "payload": "sample_data/java_1.dwl"
+    }
+  }
+}

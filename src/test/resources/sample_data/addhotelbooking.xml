@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:addHotelBooking xmlns:ns0="http://www.bookmyholiday.com/hotels/">
+  <ns0:hotelBooking>
+    <ns0:contactNumber>aliqua.</ns0:contactNumber>
+    <ns0:startdate>ab</ns0:startdate>
+    <ns0:enddate>sit</ns0:enddate>
+    <ns0:startTime>qui</ns0:startTime>
+    <ns0:endTime>accusantium</ns0:endTime>
+    <ns0:destination>ipsum</ns0:destination>
+    <ns0:noOfPassengers>6</ns0:noOfPassengers>
+    <ns0:couponName>Sed</ns0:couponName>
+    <ns0:couponApplied>sed</ns0:couponApplied>
+    <ns0:price>
+    	<ns0:baseFare>12200</ns0:baseFare>
+    	<ns0:taxes>1222</ns0:taxes>
+    	<ns0:total>12321</ns0:total>
+    	<ns0:bookingtype>non</ns0:bookingtype>
+    </ns0:price>
+    <ns0:noOfDays>54</ns0:noOfDays>
+    <ns0:noOfRooms>3</ns0:noOfRooms>
+    <ns0:hotelType>non</ns0:hotelType>
+    <ns0:roomType>sunt</ns0:roomType>
+    <ns0:bedSize>eaque</ns0:bedSize>
+    <ns0:insurance>aperiam,</ns0:insurance>
+    <ns0:bookingId>9b9ea6a1db44454dacc</ns0:bookingId>
+    <ns0:pnr>proident,</ns0:pnr>
+    <ns0:username>Clint.Smogur</ns0:username>
+    <ns0:fname>Chas</ns0:fname>
+    <ns0:lname>Aletha</ns0:lname>
+    <ns0:serviceName>minima</ns0:serviceName>
+    <ns0:serviceNumber>Ut</ns0:serviceNumber>
+    <ns0:serviceId>e3c99b4011194d7eb3e</ns0:serviceId>
+    <availability>5</availability>
+  </ns0:hotelBooking>
+</ns0:addHotelBooking>

@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:getHotels xmlns:ns0="http://www.bookmyholiday.com/hotels/">
+  <ns0:startDate>amet,</ns0:startDate>
+  <ns0:destination>magnam</ns0:destination>
+  <ns0:noOfRooms>anim</ns0:noOfRooms>
+</ns0:getHotels>

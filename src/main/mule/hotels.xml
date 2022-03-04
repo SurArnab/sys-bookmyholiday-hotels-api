@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:batch="http://www.mulesoft.org/schema/mule/ee/batch" xmlns:bti="http://www.mulesoft.org/schema/mule/ee/bti/" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:http-policy="http://www.mulesoft.org/schema/mule/mule-http" xmlns:kryo="http://www.mulesoft.org/schema/mule/kryo" xmlns:module="http://www.mulesoft.org/schema/mule/module" xmlns:sockets="http://www.mulesoft.org/schema/mule/sockets" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <apikit-soap:config httpStatusVarName="httpStatus" name="soapkit-config" port="hotelsSOAP" service="hotels" wsdlLocation="hotels.wsdl"/>
+    <flow name="api-main">
+        <http:listener config-ref="HTTP_Listener_config" path="/hotels/hotelsSOAP">
+            <http:response statusCode="#[attributes.additionalTransportData.statusCode default 200]">
+                <http:headers>
+                    <![CDATA[#[attributes.protocolHeaders default {}]]]>
+                </http:headers>
+            </http:response>
+            <http:error-response statusCode="#[attributes.additionalTransportData.statusCode default 500]">
+                <http:body>
+                    <![CDATA[#[payload]]]>
+                </http:body>
+                <http:headers>
+                    <![CDATA[#[attributes.protocolHeaders default {}]]]>
+                </http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit-soap:router config-ref="soapkit-config">
+            <apikit-soap:attributes>#[%dw 2.0
+              output application/java
+              ---
+              {
+                  headers: attributes.headers,
+                  method: attributes.method,
+                  queryString: attributes.queryString
+            }]</apikit-soap:attributes>
+        </apikit-soap:router>
+    </flow>
+    <flow name="getHotels:\soapkit-config">
+        <logger doc:id="4dfee684-34ba-48e4-89d0-aa7c308024ab" doc:name="Logger" level="INFO" message="'Payload is : ' #[payload.body.getHotels.startDate]"/>
+        <flow-ref doc:id="55c6c523-fbdd-4e37-84c4-40be3c769abe" doc:name="selectFlow" name="selectFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="getHotelDetails:\soapkit-config">
+        <logger doc:id="acdbdfde-71d5-4d86-90d6-cff94b650a6f" doc:name="payload logging" level="INFO" message="'Payload is : ' #[payload.body.getHotelDetails]"/>
+        <flow-ref doc:id="bd52cbbc-fec0-4ae4-9af8-4d1e96bd5049" doc:name="selectDetailsFlow" name="selectDetailsFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="addHotels:\soapkit-config">
+        <logger doc:id="74cd3db0-0c72-44c4-858f-2bcc889908b7" doc:name="Logger" level="INFO" message="&quot;Add Hotels&quot; #[payload.body.addHotels]"/>
+        <flow-ref doc:id="7c214c55-1eb9-48ad-9dab-8411ab15e24c" doc:name="addHotelsFlow" name="addHotelsFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="updateHotels:\soapkit-config">
+		<flow-ref doc:name="updateHotelsFlow" doc:id="89d00ecb-6159-4d5e-bf6c-2c0fbd6a4dfd" name="updateHotelsFlow"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="updateHotelBooking:\soapkit-config">
+        <flow-ref doc:id="03325bee-b361-46c1-af2e-85a3d9b10672" doc:name="UpdateBookingsFlow" name="UpdateBookingsFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="addHotelBooking:\soapkit-config">
+        <logger doc:id="95f758d2-a2fb-4843-89e3-f1f00079bd50" doc:name="Logger" level="INFO" message="#[%dw 2.0&#10;ns ns0 http://www.bookmyholiday.com/hotels/&#10;---&#10;payload.body.ns0#addHotelBooking]"/>
+        <flow-ref doc:id="430b36e5-8a85-4c98-a820-563b8707a02c" doc:name="Flow Reference" name="addBookingFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="getMaxID:\soapkit-config">
+        <flow-ref doc:id="7479a4f9-7007-48a9-ad82-048c2f8c1701" doc:name="getMaxIdFlow" name="getMaxIdFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="getMaxBookingId:\soapkit-config">
+        <flow-ref doc:id="fad67668-8b9e-4310-8323-fe9c544ab8a9" doc:name="getMaxBookingIdFlow" name="getMaxBookingIdFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="getAvailability:\soapkit-config">
+        <flow-ref doc:id="826c9405-f366-4623-bcc2-0687fa602103" doc:name="getAvailabilityHotelsFlow" name="getAvailabilityHotelsFlow"/>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/xml
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+payload]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>

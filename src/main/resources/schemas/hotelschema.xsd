@@ -1,0 +1,418 @@
+<?xml version="1.0"?>
+<xsd:schema targetNamespace="http://www.bookmyholiday.com/hotels/" attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:htl="http://www.bookmyholiday.com/hotels/">
+			<xsd:complexType name="bookingTypes">
+            	<xsd:sequence>
+            		<xsd:element name="bookingtype" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="destinationType">
+            	<xsd:sequence>
+            		<xsd:element name="locationCode"
+            			type="xsd:string">
+            		</xsd:element>
+            		<xsd:element name="locationDescription" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="priceType">
+            	<xsd:sequence>
+            		<xsd:element name="baseFare" type="xsd:string"></xsd:element>
+            		<xsd:element name="taxes" type="xsd:string"></xsd:element>
+            		<xsd:element name="total" type="xsd:string"></xsd:element>
+            		<xsd:element name="bookingtype" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="rulesType">
+            	<xsd:sequence>
+            		<xsd:element name="rule" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="imagesType">
+            	<xsd:sequence>
+            		<xsd:element name="image" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+        
+            <xsd:complexType name="availableCouponsType">
+            	<xsd:sequence>
+            		<xsd:element name="code" type="xsd:string"></xsd:element>
+            		<xsd:element name="description" type="xsd:string"></xsd:element>
+            		<xsd:element name="rule" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="cancellationPolicy">
+            	<xsd:sequence>
+            		<xsd:element name="timeFrame" type="xsd:string"></xsd:element>
+            		<xsd:element name="charges" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="reschedulePolicyType">
+            	<xsd:sequence>
+            		<xsd:element name="timeFrame" type="xsd:string"></xsd:element>
+            		<xsd:element name="charges" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="hotelType">
+            	<xsd:sequence>
+            		<xsd:element name="id" type="xsd:int" maxOccurs="1"
+            			minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="name" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="number" type="xsd:string" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="description" type="xsd:string"></xsd:element>
+            		<xsd:element name="rating" type="xsd:string"></xsd:element>
+
+
+            		<xsd:element name="bookingTypes"
+            			type="htl:bookingTypes" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="startDate" type="xsd:string"></xsd:element>
+            		<xsd:element name="endDate" type="xsd:string"></xsd:element>
+            		<xsd:element name="startTime" type="xsd:string"></xsd:element>
+            		<xsd:element name="endTime" type="xsd:string"></xsd:element>
+
+            		<xsd:element name="destination"
+            			type="htl:destinationType">
+            		</xsd:element>
+            		<xsd:element name="price" type="htl:priceType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="currency" type="xsd:string"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+    
+            <xsd:complexType name="hotelDetails">
+            	<xsd:sequence>
+            		<xsd:element name="id" type="xsd:int" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="name" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="number" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="description" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="propertyhighlights"
+            			type="xsd:string" maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="rating" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="bookingtypes" type="htl:bookingTypes" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="rules" type="htl:rulesType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="images" type="htl:imagesType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="startDate" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="endDate" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="startTime" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="endTime" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="destination"
+            			type="htl:destinationType" maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="availability" type="xsd:int" maxOccurs="1" minOccurs="0"></xsd:element>
+
+
+            		<xsd:element name="roomTypes" type="htl:roomType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="bedSize" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+
+
+            		<xsd:element name="price" type="htl:priceType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		<xsd:element name="currency" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="availableCoupons"
+            			type="htl:availableCouponsType" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="cancellationPolicy"
+            			type="htl:cancellationPolicy" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="reschedulePolicy"
+            			type="htl:reschedulePolicyType" maxOccurs="unbounded" minOccurs="1">
+            		</xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="getHotelDetails">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:int"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getHotelDetailsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotelDetails"
+            				type="htl:hotelDetails" maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotels">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotel"
+            				type="htl:hotelDetails" maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotelsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:int"></xsd:element>
+            			<xsd:element name="message"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotels">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotels"
+            				type="htl:hotelDetails">
+            			</xsd:element>
+            			<xsd:element name="id"
+            				type="xsd:int">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotelsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="message" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotelBooking">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="bookingId" type="xsd:string"></xsd:element>
+            			<xsd:element name="hotelBookingDetails"
+            				type="htl:hotelBookingDetails">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="updateHotelBookingResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"
+            				maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            			<xsd:element name="message"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+    
+            <xsd:complexType name="hotelBookingDetails">
+            	<xsd:sequence>
+            		<xsd:element name="contactNumber" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="startdate" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="enddate" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="noOfPassengers" type="xsd:int"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="couponName" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="price" type="htl:priceType"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="noOfDays" type="xsd:int"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="noOfRooms" type="xsd:int"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="updatedRooms" type="xsd:int" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="hotelType" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="roomType" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="bedSize" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="insurance" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="serviceId" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="isCancel" type="xsd:boolean"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="availableRooms" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+        
+    
+            <xsd:element name="getHotels">
+            	<xsd:complexType>
+            		<xsd:sequence>
+            			<xsd:element name="startDate"
+            				type="xsd:string">
+            			</xsd:element>
+            			<xsd:element name="endDate" type="xsd:string">
+            			</xsd:element>
+            			<xsd:element name="destination"
+            				type="xsd:string">
+            			</xsd:element>
+            			<xsd:element name="noOfRooms"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getHotelsResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotels" type="htl:hotelType" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotelBooking">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="hotelBooking" type="htl:addHotelBookingDetails"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="addHotelBookingResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"
+            				maxOccurs="1" minOccurs="1">
+            			</xsd:element>
+            			<xsd:element name="message"
+            				type="xsd:string">
+            			</xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+    
+            <xsd:complexType name="addHotelBookingDetails">
+            	<xsd:sequence>
+            		<xsd:element name="contactNumber" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="startdate" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="enddate" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="startTime" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="endTime" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="destination" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="noOfPassengers" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="couponName" type="xsd:string"
+            			maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="couponApplied"
+            			type="xsd:string" maxOccurs="1" minOccurs="0">
+            		</xsd:element>
+            		<xsd:element name="price" type="htl:priceType"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="noOfDays" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="noOfRooms" type="xsd:int"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="hotelType" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="roomType" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="bedSize" type="xsd:string"
+            			maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="insurance" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="bookingId" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="pnr" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="username" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="fname" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="lname" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+            		<xsd:element name="serviceName" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="serviceNumber"
+            			type="xsd:string" maxOccurs="1" minOccurs="1">
+            		</xsd:element>
+            		<xsd:element name="serviceId" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            		<xsd:element name="availability" type="xsd:string" maxOccurs="1" minOccurs="1"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+    
+            <xsd:complexType name="roomType">
+            	<xsd:sequence>
+            		<xsd:element name="roomType" type="xsd:string" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+            	</xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="getMaxID">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getMaxIDResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getMaxBookingId">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getMaxBookingIdResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="bookingId" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getAvailability">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="id" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getAvailabilityResponse">
+            	<xsd:complexType>
+            		<xsd:sequence>
+
+            			<xsd:element name="availability" type="xsd:string"></xsd:element>
+            		</xsd:sequence>
+            	</xsd:complexType>
+            </xsd:element>
+</xsd:schema>

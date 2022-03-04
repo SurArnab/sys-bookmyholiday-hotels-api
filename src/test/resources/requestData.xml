@@ -1,0 +1,8 @@
+<?xml version="1.0>
+<body xmlns:hot="http://www.bookmyholiday.com/hotels/">
+	<hot:getHotels>
+         <startDate>2021-02-21</startDate>
+         <destination>CCU</destination>
+         <noOfRooms>1</noOfRooms>
+      </hot:getHotels>
+</body>

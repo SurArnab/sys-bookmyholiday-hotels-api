@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="UpdateBookingsFlow" doc:id="5b9858d0-88ba-4566-9c22-42692ee2f97c" >
+		<ee:transform doc:name="map to json" doc:id="622727a7-982e-4d09-922c-3ef884f8d9eb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"bookingid": payload.body.updateHotelBooking.bookingId,
+	"name": payload.body.updateHotelBooking.hotelBoookingDetails.name,
+	"contactnumber": payload.body.updateHotelBooking.hotelBookingDetails.contactNumber,
+	"startdate": payload.body.updateHotelBooking.hotelBookingDetails.startDate,
+	"enddate": payload.body.updateHotelBooking.hotelBookingDetails.endDate,
+	"noOfPassengers": payload.body.updateHotelBooking.hotelBookingDetails.noOfPassengers default 0,
+	"couponName": payload.body.updateHotelBooking.hotelBookingDetails.couponName,
+	"noOfDays": payload.body.updateHotelBooking.hotelBookingDetails.noOfDays default 0,
+	"price": "[{\"baseFare\":\"" ++ payload.body.updateHotelBooking.hotelBookingDetails.price.baseFare ++ "\",\"taxes\":\"" ++ payload.body.updateHotelBooking.hotelBookingDetails.price.taxes ++ "\",\"total\":\"" ++ payload.body.updateHotelBooking.hotelBookingDetails.price.total ++ "\",\"bookingtype\":\"" ++ 	payload.body.updateHotelBooking.hotelBookingDetails.price.bookingtype ++ "\"}]",
+	"noOfRooms": payload.body.updateHotelBooking.hotelBookingDetails.noOfRooms default 0,
+	"updatedRooms": payload.body.updateHotelBooking.hotelBookingDetails.updatedRooms as Number default 0,
+	"hotelType": payload.body.updateHotelBooking.hotelBookingDetails.hotelType,
+	"roomType": payload.body.updateHotelBooking.hotelBookingDetails.roomType,
+	"bedSize": payload.body.updateHotelBooking.hotelBookingDetails.bedSize,
+	"serviceid": payload.body.updateHotelBooking.hotelBookingDetails.serviceId,
+	"insurance":payload.body.updateHotelBooking.hotelBookingDetails.insurance,
+	"isCancel": payload.body.updateHotelBooking.hotelBookingDetails.isCancel,
+	"availableRooms":payload.body.updateHotelBooking.hotelBookingDetails.availableRooms  as Number,
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="b26411f9-1599-4aa6-869c-4fba7061fedb" message='"Start of the Update booking " #[payload.bookingid]'/>
+		<flow-ref doc:name="set Payload" doc:id="fc74eecc-4b37-4986-a38e-d5367b88067a" name="setPayloadSub_Flow"/>
+		<set-variable value="#[payload.serviceid]" doc:name="Set Hotel Id" doc:id="807dae40-dfc7-49d6-8803-2f77101d8015" variableName="hotelid"/>
+		<set-variable value="#[payload.bookingid]" doc:name="Set Booking id" doc:id="f2da0a8e-a5ba-469d-92f5-9e3c8f1f7e3c" variableName="bookingid"/>
+		<choice doc:name="Choice" doc:id="8cf52df2-195b-42d9-9456-24a855631978" >
+			<when expression='#[payload.isCancel == "true"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="63d1108e-0b10-4f06-b8cf-5c21dc9c4703" message="Start of Cancel Flight flow"/>
+				<try doc:name="Try" doc:id="ab372d22-1d43-4ad4-a4c5-3f3df84e8619" transactionalAction="ALWAYS_BEGIN">
+					<set-variable value="#[(payload.availableRooms + payload.noOfRooms)]" doc:name="Set updated availability" doc:id="0497e9b3-678f-47cd-b8b4-4b18aa7ee7f3" variableName="updatedavailability"/>
+					<db:delete doc:name="Delete" doc:id="59d8654c-fa0e-4fbd-bb79-12b39736cd99" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+						<db:sql ><![CDATA[delete from bookings where "bookingid" = :bookingid]]></db:sql>
+						<db:input-parameters ><![CDATA[#[{
+	"bookingid" : payload.bookingid
+}]]]></db:input-parameters>
+					</db:delete>
+					<choice doc:name="Choice" doc:id="89115d2a-790b-413d-9ba9-a5162aea1efa" >
+						<when expression="#[payload == 1]">
+							<db:update doc:name="Update" doc:id="9a283d26-21ec-417b-91ef-528e8727e227" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+								<db:sql ><![CDATA[update hotels set "availablerooms" = :availablerooms where "id" = :id]]></db:sql>
+								<db:input-parameters ><![CDATA[#[{
+	"availablerooms" : vars.updatedavailability,
+	"id":vars.hotelid
+}]]]></db:input-parameters>
+							</db:update>
+							<ee:transform doc:name="cancel Response" doc:id="4b412591-dd4f-44bc-864b-d1d82a040c72" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#updateHotelBookingResponse: {
+		htl#id: vars.bookingid,
+		htl#message: "Booking Cancelled successfully"
+	}
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</when>
+						<otherwise >
+							<ee:transform doc:name="no cancel" doc:id="a93deff9-190d-4cb5-a6f8-f7f955251918" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Bookings updated"
+        }
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</otherwise>
+					</choice>
+				</try>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="3475b6e4-7fa5-4af6-8e12-8ad848847961" message="Start of Reschedule Flight flow" />
+				<choice doc:name="Choice" doc:id="6d1a1208-b295-4ecc-895a-bc6995d3a223" >
+					<when expression="#[payload.updatedRooms &gt; 0]">
+						<ee:transform doc:name="Transform Message" doc:id="12f7391a-ddb8-4b50-b6b6-d78a237d91aa">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Strings
+var data=(if (payload.name != null) ('name=\'' ++ payload.name ++ '\',') else '')	
+	++ (if (payload.contactnumber != null) ('contactnumber=\'' ++ payload.contactnumber ++ '\',') else '')
+	++ (if (payload.startdate != null) ('startdate=\'' ++ payload.startdate ++ '\',') else '')
+	++ (if (payload.enddate != null) ('enddate=\'' ++ payload.enddate ++ '\',') else '')
+	++ (if (payload.noOfPassengers != 0) ('noofpassengers=\'' ++ payload.noOfPassengers ++ '\',') else '')
+	++ (if (payload.couponName != null) ('couponname=\'' ++ payload.couponName ++ '\',') else '')
+	++ (if (payload.noOfDays != 0) ('noofdays=\'' ++ payload.noOfDays ++ '\',') else '')
+	++ (if (payload.price != 'null') ('price=\'' ++ payload.price ++ '\',') else '')
+	++ (if (payload.updatedRooms != 0) ('noofrooms=\'' ++ payload.updatedRooms ++ '\',') else '')
+	++ (if (payload.hotelType != null) ('hoteltype=\'' ++ payload.hotelType ++ '\',') else '')
+	++ (if (payload.roomType != null) ('roomtype=\'' ++ payload.roomType ++ '\',') else '')
+	++ (if (payload.bedSize != null) ('bedsize=\'' ++ payload.bedSize ++ '\',') else '')
+	++ (if (payload.insurance != null) ('insurance=\'' ++ payload.insurance ++ '\'') else '')
+
+
+output application/java
+---
+(if(data endsWith ',') (substring(data,0,sizeOf(data)-1) replace "\"" with "") else (data replace "\"" with ""))]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+						<logger level="INFO" doc:name="Logger" doc:id="0f6ba3f3-ee43-4bed-8505-0a190cfbab64" message='"Query is: " #[payload]'/>
+						<set-variable value="#[payload]" doc:name="Set query" doc:id="4e38e5cb-3cc5-42a1-b5fd-dd7301d096e4" variableName="updatedquery"/>
+						<try doc:name="Try" doc:id="adb9af16-4d13-4c38-a180-3d2cae4ea102" transactionalAction="ALWAYS_BEGIN">
+							<db:update doc:name="Update Booking" doc:id="14804948-ce87-4a87-9c9b-91436e7ba230" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+							<db:sql><![CDATA[#["update bookings set $(vars.updatedquery) where bookingid= :bookingid"]]]></db:sql>
+							<db:input-parameters><![CDATA[#[{
+	"bookingid": vars.bookingid
+}]]]></db:input-parameters>
+						</db:update>
+							<choice doc:name="Choice" doc:id="cba7273e-e975-4aab-9dbe-ebdeed3d026a" >
+								<when expression="#[payload.affectedRows == 1]">
+									<db:update doc:name="Update hotels" doc:id="80ec7fdf-cf69-4be4-a4d1-dd8d08b0de33" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN" >
+										<db:sql ><![CDATA[update hotels set "availablerooms" = :availablerooms where "id" = :id]]></db:sql>
+										<db:input-parameters ><![CDATA[#[{
+	"availablerooms" : (vars.inputData.availableRooms  - vars.inputData.updatedRooms),
+	"id":vars.inputData.serviceid
+}]]]></db:input-parameters>
+									</db:update>
+									<ee:transform doc:name="update response Response" doc:id="cb7f5363-3d71-4e91-8eb5-6e53ac5946af" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#updateHotelBookingResponse: {
+		htl#id: vars.bookingid,
+		htl#message: "Booking rescheduled successfully"
+	}
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</when>
+								<otherwise >
+									<ee:transform doc:name="no reschedule" doc:id="8ae5a5c3-25c0-4f3f-9e5d-e83d9fc16b0f" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Bookings updated"
+        }
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</otherwise>
+							</choice>
+						</try>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Transform Message" doc:id="09b17a2e-f0c4-4b12-8cd9-6021d63a499f">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Strings
+var data=(if (payload.name != null) ('name=\'' ++ payload.name ++ '\',') else '')	
+	++ (if (payload.contactnumber != null) ('contactnumber=\'' ++ payload.contactnumber ++ '\',') else '')
+	++ (if (payload.startdate != null) ('startdate=\'' ++ payload.startdate ++ '\',') else '')
+	++ (if (payload.enddate != null) ('enddate=\'' ++ payload.enddate ++ '\',') else '')
+	++ (if (payload.noOfPassengers != 0) ('noofpassengers=\'' ++ payload.noOfPassengers ++ '\',') else '')
+	++ (if (payload.couponName != null) ('couponname=\'' ++ payload.couponName ++ '\',') else '')
+	++ (if (payload.noOfDays != 0) ('noofdays=\'' ++ payload.noOfDays ++ '\',') else '')
+	++ (if (payload.price != 'null') ('price=\'' ++ payload.price ++ '\',') else '')
+	++ (if (payload.updatedRooms != 0) ('noofrooms=\'' ++ payload.updatedRooms ++ '\',') else '')
+	++ (if (payload.hotelType != null) ('hoteltype=\'' ++ payload.hotelType ++ '\',') else '')
+	++ (if (payload.roomType != null) ('roomtype=\'' ++ payload.roomType ++ '\',') else '')
+	++ (if (payload.bedSize != null) ('bedsize=\'' ++ payload.bedSize ++ '\',') else '')
+	++ (if (payload.insurance != null) ('insurance=\'' ++ payload.insurance ++ '\'') else '')
+
+
+output application/java
+---
+(if(data endsWith ',') (substring(data,0,sizeOf(data)-1) replace "\"" with "") else (data replace "\"" with ""))]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<set-variable value="#[payload]" doc:name="Set query" doc:id="8e021b85-f99d-43da-8626-e58257bed9ed" variableName="updatedquery" />
+						<db:update doc:name="Update Booking" doc:id="6677781d-f96b-4417-90f9-e2b8493835ef" config-ref="Database_Config">
+							<db:sql ><![CDATA[#["update bookings set $(vars.updatedquery) where bookingid= :bookingid"]]]></db:sql>
+							<db:input-parameters ><![CDATA[#[{
+	"bookingid": vars.bookingid
+}]]]></db:input-parameters>
+						</db:update>
+						<choice doc:name="Choice" doc:id="bb9cd952-e5d8-4598-96d8-3fe64497ca68" >
+							<when expression="#[payload.affectedRows == 1]" >
+								<ee:transform doc:name="update response" doc:id="7d0172b2-e81f-423c-b319-e992d6b7018b" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#updateHotelBookingResponse: {
+		htl#id: vars.bookingid,
+		htl#message: "Booking rescheduled successfully"
+	}
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+							</when>
+							<otherwise >
+								<ee:transform doc:name="no reschedule" doc:id="24ce4f30-6956-4b01-8497-2e350b374d3f" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Bookings updated"
+        }
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+							</otherwise>
+						</choice>
+					</otherwise>
+				</choice>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="c20a4e05-38d7-4ac5-a739-760ff07f2ced" message='"End of the Update booking " #[vars.inputData.bookingid]' />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="913b4ec8-9aa1-48db-88de-39602bda0b5f" type="ANY" >
+				<logger level="INFO" doc:name="Error Log" doc:id="bce2f7df-2392-4874-9488-91a27a24d064" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="map Error" doc:id="21931aa8-1e6f-4ba7-ab42-2440102fe617" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="updateHotelsFlow" doc:id="f8e1b4c0-70b4-4baf-8b6b-61a2b73621d7" >
+		<ee:transform doc:name="map to json" doc:id="1b3365b6-b383-4e76-9614-96411031ce1f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"id": payload.body.updateHotels.id as Number,
+	"name": payload.body.updateHotels.hotels.name,
+	"hotelnumber": payload.body.updateHotels.hotels.number,
+	"description": payload.body.updateHotels.hotels.description,
+	"propertyhighlights": payload.body.updateHotels.hotels.propertyhighlights,
+	"rating": payload.body.updateHotels.hotels.rating,
+	"hotelTypes":  write(payload.body.updateHotels.hotels.*bookingtypes map (item, index) ->{
+		"bookingtype" : item.bookingtype
+	}, "application/json"),
+	"rules":  write(payload.body.updateHotels.hotels.*rules map(item, index) -> {
+		"rule": item.rule
+	}, "application/json"),
+	"availablerooms": payload.body.updateHotels.hotels.availability,
+	"startdate": payload.body.updateHotels.hotels.startDate,
+	"enddate": payload.body.updateHotels.hotels.endDate,
+	"starttime": payload.body.updateHotels.hotels.startTime,
+	"endtime": payload.body.updateHotels.hotels.endTime,
+	"destination": payload.body.updateHotels.hotels.destination.locationCode,
+	"roomTypes":  write(payload.body.updateHotels.hotels.*roomTypes map(item, index) -> {
+		"roomtype" : item.roomType
+	}, "application/json") ,
+	"bedSize":  write(payload.body.updateHotels.hotels.*bedSize map (item,index)->item, "application/json") ,
+	"price":  write(payload.body.updateHotels.hotels.*price map(item,index) -> {
+		"baseFare" : item.baseFare,
+		"taxes" : item.taxes,
+		"total" : item.total,
+		"bookingtype" : item.bookingtype
+	}, "application/json") ,
+	"currency":payload.body.updateHotels.hotels.currency,
+	"availableCoupons":  write(payload.body.updateHotels.hotels.*availableCoupons map(item, index) -> {
+		"code" : item.code,
+		"description" : item.description,
+		"rule" : item.rule
+	}, "application/json") ,
+	"cancellationPolicy":  write(payload.body.updateHotels.hotels.*cancellationPolicy map(item, index) -> {
+		"timeFrame" : item.timeFrame,
+		"charges" : item.charges
+	}, "application/json") ,
+	"reschedulePolicy":write(payload.body.updateHotels.hotels.*reschedulePolicy map(item, index) -> {
+		"timeFrame" : item.timeFrame,
+		"charges" : item.charges
+	}, "application/json") ,
+	"locationdesc": payload.body.updateHotels.hotels.destination.locationDescription,
+	"imagestype":  write(payload.body.updateHotels.hotels.*images map(item, index) -> {"image":item.image}, "application/json") 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="b32a1f99-7c80-416f-8de2-7f11e0da1319" message='"Start of update hotels for hotel id " #[payload.id]' />
+		<set-variable value="#[payload.id]" doc:name="Set Id" doc:id="d2e59046-7d6e-42ba-8221-c7f36a526452" variableName="id"/>
+		<ee:transform doc:name="Transform Message" doc:id="b145a3ef-a2e4-4ab4-9d19-e04d41808a7f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+var data=(if (payload.name != null) ('name=\'' ++ payload.name ++ '\',') else '')	
+	++ (if (payload.hotelnumber != null) ('hotelnumber=\'' ++ payload.hotelnumber ++ '\',') else '')
+	++ (if (payload.description != null) ('description=\'' ++ payload.description ++ '\',') else '')
+	++ (if (payload.propertyhighlights != null) ('propertyhighlights=\'' ++ payload.propertyhighlights ++ '\',') else '')
+	++ (if (payload.rating != null) ('rating=\'' ++ payload.rating ++ '\',') else '')
+	++ (if (payload.hotelTypes != 'null') ('hoteltypes=\'' ++ payload.hotelTypes ++ '\',') else '')
+	++ (if (payload.availablerooms != null) ('availablerooms=\'' ++ payload.availablerooms ++ '\',') else '')
+	++ (if (payload.startdate != null) ('startdate=\'' ++ payload.startdate ++ '\',') else '')
+	++ (if (payload.enddate != null) ('enddate=\'' ++ payload.enddate ++ '\',') else '')
+	++ (if (payload.starttime != null) ('starttime=\'' ++ payload.starttime ++ '\',') else '')
+	++ (if (payload.endtime != null) ('endtime=\'' ++ payload.endtime ++ '\',') else '')
+	++ (if (payload.destination != null) ('destination=\'' ++ payload.destination ++ '\',') else '')
+	++ (if (payload.roomTypes != 'null') ('roomTypes=\'' ++ payload.roomTypes ++ '\',') else '')
+	++ (if (payload.bedSize != 'null') ('bedSize=\'' ++ payload.bedSize ++ '\',') else '')
+	++ (if (payload.price != 'null') ('price=\'' ++ payload.price ++ '\',') else '')
+	++ (if (payload.currency != null) ('currency=\'' ++ payload.currency ++ '\',') else '')
+	++ (if (payload.availableCoupons != 'null') ('availableCoupons=\'' ++ payload.availableCoupons ++ '\',') else '')
+	++ (if (payload.cancellationPolicy != 'null') ('cancellationPolicy=\'' ++ payload.cancellationPolicy ++ '\',') else '')
+	++ (if (payload.reschedulePolicy != 'null') ('reschedulePolicy=\'' ++ payload.reschedulePolicy ++ '\',') else '')
+	++ (if (payload.locationdesc != null) ('locationdesc=\'' ++ payload.locationdesc ++ '\',') else '')
+	++ (if (payload.imagestype != null) ('imagestype=\'' ++ payload.imagestype ++ '\'') else '')
+
+
+output application/json
+---
+if(data endsWith ',') (substring(data,0,sizeOf(data)-1)) else data]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="set Payload" doc:id="14f71601-5fca-4156-b1b5-36d93017b978" name="setPayloadSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="16096c3f-0cda-4b10-b228-460a80723265" message='"Hotels to Update:" #[payload]'/>
+		<db:update doc:name="Update" doc:id="2b42b4a7-4283-4547-93ba-fc82322a1238" config-ref="Database_Config">
+			<db:sql ><![CDATA[#["update hotels set $(vars.inputData) where id= :id"]]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id" : vars.id
+}]]]></db:input-parameters>
+		</db:update>
+		<choice doc:name="Choice" doc:id="c870bab5-4d9f-4e22-8620-607855d8c355" >
+			<when expression="#[payload.affectedRows == 1]">
+				<ee:transform doc:name="Update Response" doc:id="eea8c36a-a51e-4f9f-be0c-30092baa3672">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#updateHotelsResponse: {
+		htl#message: "Hotels updated successfully"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="no update" doc:id="6cf130f4-585c-4461-852d-40edba8027c8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Hotels updated"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="end Logger" doc:id="e48e3915-fb2d-42c5-84a6-aa028d78f6cb" message='"End of update hotels for hotel id " #[vars.id]' />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7b6d864e-438c-47ee-912d-0240b3da9143" type="ANY" >
+				<logger level="INFO" doc:name="Error Log" doc:id="6d588cb9-171a-4d33-bf14-0285b79671b7" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="map Error" doc:id="a889f85b-bc18-4ad6-8ca6-e715a42bd653" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="selectFlow" doc:id="958cfd2f-7c9b-4088-a179-fa6c5a1cdef3" >
+		<logger level="INFO" doc:name="Logger" doc:id="5cf20c81-189f-48a4-9980-c2e25eee3058" message='"Start of Flow with destination :" #[payload.body.getHotels.destination]'/>
+		<validation:is-not-null doc:name="validateDestination" doc:id="3e54115c-592e-4ecd-a2e5-8e5c29a72f9e" value="#[payload.body.getHotels.destination]" message="Destination is null">
+			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:NODEST" />
+		</validation:is-not-null>
+		<validation:is-not-null doc:name="validationRooms" doc:id="3fa525e4-68e0-43b2-81ab-05e40d356411" value="#[payload.body.getHotels.noOfRooms]" message="No of Rooms is null">
+			<error-mapping targetType="APP:ROOMSERROR" />
+		</validation:is-not-null>
+		<ee:transform doc:name="create input" doc:id="ae6b2459-49f2-4530-913b-a5c7d5b8a1c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Dates
+output application/json
+---
+{
+	"startDate" : payload.body.getHotels.startDate default tomorrow(),
+	"endDate":payload.body.getHotels.endDate default today() + ("P$(2)D" as Period),
+	"destination" : payload.body.getHotels.destination,
+	"noOfRooms" : payload.body.getHotels.noOfRooms
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="fdcdddc2-5feb-4777-b917-0d82f0de146c" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from hotels where startdate= :startDate and enddate= :endDate and destination= :destination and availablerooms >= :noOfRooms]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"startDate" : payload.startDate,
+	"endDate" : payload.endDate,
+	"destination" : payload.destination,
+	"noOfRooms" : payload.noOfRooms
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="f67dbefe-ed8d-4fca-9097-b4c2496d64e1" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<logger level="INFO" doc:name="Logger" doc:id="9142ec4b-6bf2-4951-81b2-f6ad66faa8d1" message='"Payload Received: "#[payload]' />
+				<ee:transform doc:name="Result Completed" doc:id="da26c4b2-ce75-4c44-9eb5-02eed5054ffa">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0 
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#getHotelsResponse: {
+		(payload map ( payload01 , indexOfPayload01 ) -> {
+			htl#hotels: {
+				htl#id: payload01.id,
+				htl#name: payload01.name,
+				htl#number: payload01.hotelnumber,
+				htl#description: payload01.description,
+				htl#rating: payload01.rating as String default "",
+				(read(payload01.hoteltypes,"application/json") map(hotelType, indexofType) -> {
+					htl#bookingTypes: {
+						htl#bookingtype: hotelType.bookingtype
+					}
+				}),
+				htl#destination: {
+						htl#locationCode : payload01.destination default "",
+						htl#locationDescription: payload01.locationdesc default ""
+					},
+				htl#startDate: (payload01.startdate default ""),
+				htl#endDate: payload01.enddate,
+				htl#startTime: payload01.starttime default "",
+				htl#endTime: payload01.endtime default "",
+				htl#destination: {
+					htl#locationCode: payload01.destination
+				},
+			(read(payload01.price, "application/json") map(price, indexOfPrice) -> {
+					htl#price: {
+						htl#baseFare: price.baseFare,
+						htl#taxes: price.taxes,
+						htl#total: price.total,
+						htl#bookingtype: price.bookingtype
+					}
+				}),
+				htl#currency: payload01.currency default ""
+			}
+		})
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="No Data Found" doc:id="f40dcd46-ad04-4ccd-a2a5-bb98f0f00193" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Result Found for search criteria"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="c485d912-3843-40d7-9ef4-3253197b4e04" message='"End of get Hotel flow"'/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="1c64d18c-e943-44cc-a134-9e9e8b0c0d93" type="APP:NODEST">
+				<logger level="INFO" doc:name="Logger" doc:id="d367d8ea-9739-4e2e-bf7d-620a5a3a05ce" message='"No Destination Provided"'/>
+				<ee:transform doc:name="No Destination" doc:id="de355ebf-cc6a-4fd2-b76e-00df566c08f9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Destination Provided"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="cccab7e9-540a-48f9-b4c8-92a9c7937da7" type="APP:ROOMSERROR" >
+				<logger level="INFO" doc:name="Logger" doc:id="7f7a54c1-d9de-411d-8c87-35023650c029" message='"No of Rooms not Provided"' />
+				<ee:transform doc:name="no of rooms error" doc:id="62ae162b-4a59-4b73-9b7c-36a948ba32fb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No of Rooms not Provided"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="902483fa-f6b2-4a71-830d-31e9d2e2bbc0" type="DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION, VALIDATION:NULL, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<logger level="INFO" doc:name="Logger" doc:id="d0dccea3-a7d9-4400-9630-4138ad572e18" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="Other Error" doc:id="f228f8dc-d039-4861-bf3a-a52372f39e26" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="selectDetailsFlow" doc:id="dad3ac73-20f4-406a-a8ab-903c0ee602a0" >
+		<logger level="INFO" doc:name="Logger" doc:id="b5828ccf-c84d-4ab8-9e0d-c48754923376" message='"Start of flow with id " #[payload.body.getHotelDetails.id]'/>
+		<validation:is-not-null doc:name="Is not null" doc:id="e65b532f-a917-4aa1-bcb0-ed2ce7d81815" value="#[payload.body.getHotelDetails.id]" message="Flight id must exist">
+			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:IDERROR" />
+		</validation:is-not-null>
+		<db:select doc:name="select from id" doc:id="1b66ba68-a033-40ec-aa27-739fa9868df3" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from hotels where "id" = :id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"id": payload.body.getHotelDetails.id
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="9e185c8a-de7a-4b0c-b8c4-29febf319119" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="b03be4cc-5563-4be6-b3a7-e7ea9b10bd9a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#getHotelDetailsResponse: {
+		(payload map ( payload01 , indexOfPayload01 ) -> {
+		htl#hotelDetails: {
+			htl#id: payload01.id,
+			htl#name: payload01.name,
+			htl#number: payload01.hotelnumber,
+			htl#description: payload01.description,
+			htl#propertyhighlights: payload01.propertyhighlights,
+			htl#rating: payload01.rating,
+			(read(payload01.hoteltypes,"application/json") map(hotelType, indexofType) -> {
+					htl#bookingtypes: {
+						htl#bookingtype: hotelType.bookingtype
+					}
+				}),
+			(read(payload01.rules,"application/json") map(ruleType, indexofType) -> {
+					htl#rules: {
+						htl#rule: ruleType.rule
+					}
+				}),
+			(read(payload01.imagestype,"application/json") map(imageType, indexofType) -> {
+					htl#images: {
+						htl#image: imageType.image
+					}
+				}),
+			htl#startDate: payload01.startdate,
+			htl#endDate: payload01.enddate,
+			htl#startTime: payload01.starttime,
+			htl#endTime: payload01.endtime,
+			htl#destination: {
+				htl#locationCode: payload01.destination,
+				htl#locationDescription: payload01.locationdesc
+			},
+			htl#availability: payload01.availablerooms,
+			(read(payload01.roomtypes,"application/json") map(roomType, indexofType) -> {
+					htl#roomTypes: {
+						htl#roomType: roomType.roomtype
+					}
+				}),
+			(read(payload01.bedsize,"application/json") map(bedsizeType, indexofType) -> {
+					htl#bedSize: bedsizeType
+				}),
+			(read(payload01.price, "application/json") map(price, indexOfPrice) -> {
+					htl#price: {
+						htl#baseFare: price.baseFare,
+						htl#taxes: price.taxes,
+						htl#total: price.total,
+						htl#bookingtype: price.bookingtype
+					}
+				}),
+			htl#currency: payload01.currency,
+			(read(payload01.availablecoupons,"application/json") map(couponType, indexofType) -> {
+					htl#availableCoupons: {
+						htl#code: couponType.code,
+						htl#description:couponType.description,
+						htl#rule: couponType.rule
+					}
+				}),
+			(read(payload01.cancellationpolicy,"application/json") map(cancelType, indexofType) -> {
+					htl#cancellationPolicy: {
+						htl#timeFrame: cancelType.timeFrame,
+						htl#charges: cancelType.charges
+					}
+				}),
+			(read(payload01.reschedulepolicy,"application/json") map(rescheduleType, indexofType) -> {
+					htl#reschedulePolicy: {
+						htl#timeFrame: rescheduleType.timeFrame,
+						htl#charges: rescheduleType.charges
+					}
+				})
+		}
+		})
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="No Data Found" doc:id="f974588a-279c-45ae-a706-21a7acb65b72" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+	        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Result Found for search criteria"
+    }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="End of Flow" doc:id="e875ca82-f445-4c05-a4ce-b85124bffa9f" message='"End of get Hotel Details flow"' />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4f080040-4466-4bdd-ba80-a7ae33f4c701" type="APP:IDERROR">
+				<logger level="INFO" doc:name="Logger" doc:id="f5032f3e-da8b-4304-b5f3-260f15acf7ed" message='"Hotel ID not provided"' />
+				<ee:transform doc:name="id not provided" doc:id="6e03f067-dce1-4b0f-bf4b-250eb6174af3">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "Hotel ID not provided"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f9996612-b9e6-416e-9605-1ad11f1fd007" type="DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION, VALIDATION:NULL, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<logger level="INFO" doc:name="Logger" doc:id="a9ca22bf-dfca-4f7e-90dc-3e0bd0140fa4" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="Other Error" doc:id="accee1fa-5638-4341-867b-240cceef9bef" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="addBookingFlow" doc:id="a3bf85da-e0a3-4846-b2b9-4a5a069e68cd" >
+		<ee:transform doc:name="Transform Message" doc:id="b50c3e5e-09d9-41bd-86bc-84f099d3577c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"username": payload.body.addHotelBooking.hotelBooking.username default "",
+	"fname": payload.body.addHotelBooking.hotelBooking.fname default "",
+	"lname": payload.body.addHotelBooking.hotelBooking.lname default "",
+	"contactnumber": payload.body.addHotelBooking.hotelBooking.contactNumber default "",
+	"servicename": payload.body.addHotelBooking.hotelBooking.serviceName default "",
+	"bookingid": payload.body.addHotelBooking.hotelBooking.bookingId default "",
+	"pnr": payload.body.addHotelBooking.hotelBooking.pnr default "",
+	"servicenumber": payload.body.addHotelBooking.hotelBooking.serviceNumber default "",
+	"serviceid": payload.body.addHotelBooking.hotelBooking.serviceId default "",
+	"startdate": payload.body.addHotelBooking.hotelBooking.startdate default "",
+	"enddate": payload.body.addHotelBooking.hotelBooking.enddate default "",
+	"starttime": payload.body.addHotelBooking.hotelBooking.startTime default "",
+	"endtime": payload.body.addHotelBooking.hotelBooking.endTime default "",
+	"destination": payload.body.addHotelBooking.hotelBooking.destination default "",
+	"noOfPassengers": payload.body.addHotelBooking.hotelBooking.noOfPassengers as Number,
+	"couponApplied": payload.body.addHotelBooking.hotelBooking.couponApplied default "",
+	"couponName": payload.body.addHotelBooking.hotelBooking.couponName default "",
+	"price": "[{\"baseFare\":\"" ++ payload.body.addHotelBooking.hotelBooking.price.baseFare ++ "\",\"taxes\":\"" ++ payload.body.addHotelBooking.hotelBooking.price.taxes ++ "\",\"total\":\"" ++ payload.body.addHotelBooking.hotelBooking.price.total ++ "\",\"bookingtype\":\"" ++ 	payload.body.addHotelBooking.hotelBooking.price.bookingtype ++ "\"}]",
+	"hotelType": payload.body.addHotelBooking.hotelBooking.hotelType default "",
+	"noOfDays": payload.body.addHotelBooking.hotelBooking.noOfDays as Number,
+	"noOfRooms": payload.body.addHotelBooking.hotelBooking.noOfRooms as Number,
+	"roomType": payload.body.addHotelBooking.hotelBooking.roomType default "",
+	"bedSize": payload.body.addHotelBooking.hotelBooking.bedSize default "",
+	"insurance": payload.body.addHotelBooking.hotelBooking.insurance default "",
+	"availableRooms": (payload.body.addHotelBooking.hotelBooking.availability - payload.body.addHotelBooking.hotelBooking.noOfRooms)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a204605b-7a02-41f6-bbb8-2b4d8d6c144d" message='"Start of add booking flow for booking number : " #[payload.bookingid]' />
+		<set-variable value="#[payload]" doc:name="setInputData" doc:id="0392cb95-2873-47b9-991e-1fb065686f0b" variableName="inputData"/>
+		<try doc:name="Try" doc:id="bbe5fe1a-f179-437b-83c0-094cf3424667" transactionalAction="ALWAYS_BEGIN">
+			<db:insert doc:name="Insert" doc:id="7ce33b52-dba5-406b-a977-8238d120f958" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+			<db:sql><![CDATA[insert into bookings ( username, fname, lname, contactnumber, servicename, bookingid, pnr, servicenumber, serviceid, startdate, enddate, starttime, endtime, destination, noofpassengers, couponapplied, couponname, price, hoteltype, noofdays, noofrooms, roomtype, bedsize, insurance) values (:username, :fname, :lname, :contactnumber, :servicename, :bookingid, :pnr, :servicenumber, :serviceid, :startdate, :enddate, :starttime, :endtime, :destination, :noOfPassengers, :couponApplied, :couponName, :price, :hotelType, :noOfDays, :noOfRooms, :roomType, :bedSize, :insurance)]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"username":payload.username, "fname":payload.fname, "lname":payload.lname, "contactnumber":payload.contactnumber, "servicename":payload.servicename, "bookingid":payload.bookingid, "pnr":payload.pnr, "servicenumber":payload.servicenumber, "serviceid":payload.serviceid, "startdate":payload.startdate, "enddate":payload.enddate, "starttime":payload.starttime, "endtime":payload.endtime, "destination":payload.destination, "noOfPassengers":payload.noOfPassengers, "couponApplied":payload.couponApplied, "couponName":payload.couponName, "price":payload.price, "hotelType":payload.hotelType, "noOfDays":payload.noOfDays, "noOfRooms":payload.noOfRooms, "roomType":payload.roomType, "bedSize":payload.bedSize, "insurance":payload.insurance
+}]]]></db:input-parameters>
+		</db:insert>
+			<choice doc:name="Choice" doc:id="70d22003-b730-4990-9ea7-59d05b13a389">
+			<when expression="#[payload.affectedRows == 1]">
+				<db:update doc:name="Update" doc:id="4c64ff9d-fdee-4abe-948d-3ea9dd396bc3" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+					<db:sql><![CDATA[update hotels set "availablerooms"= :availability where "id"=:id]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	"availability": vars.inputData.availableRooms,
+	"id": vars.inputData.serviceid
+}]]]></db:input-parameters>
+				</db:update>
+				<choice doc:name="Choice" doc:id="f0f0454d-0a5a-4fe2-9869-00d47026ad9e">
+					<when expression="#[payload.affectedRows == 1]">
+						<ee:transform doc:name="Transform Message" doc:id="93621639-2be9-40ae-b2dd-6a4d1b4de7bd">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#addHotelBookingResponse: {
+		htl#id: vars.inputData.bookingid as String,
+		htl#message: "Booking added successfully"
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise>
+						<ee:transform doc:name="no Update" doc:id="d7575f85-80d3-446f-adaa-41c0956d20f4">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "Unable to update hotel"
+        }
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="no insert" doc:id="0bd22154-d232-4102-9246-8a2946abb080">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Booking added"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="86f26147-435e-4e77-92ed-ae604ee5fee3" >
+					<logger level="INFO" doc:name="Logger" doc:id="7c83a323-2eae-4ca1-9f05-c6c38b2574bf" message='"Error in bookings: " #[error.description]'/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Logger" doc:id="b7f2e564-22c5-48df-900a-3ba201c36868" message='"End of add booking flow for booking number : " #[vars.inputData.bookingid]' />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="00a40191-7511-4726-8a9a-2a15a7e8e591" type="ANY">
+				<logger level="INFO" doc:name="Error Log" doc:id="92b27b23-a66f-4cf7-8b3f-95f3ac97ed1d" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="map Error" doc:id="6cca1603-1415-46d1-a332-ab3dec491ecb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="getMaxIdFlow" doc:id="31e85525-7e18-44b5-8451-63ed9bc182a4" >
+		<logger level="INFO" doc:name="Logger" doc:id="1ac14f4d-5e8e-4b7b-8c15-636104231e2f" message='"Start of Max Id service"'/>
+		<db:select doc:name="Select" doc:id="acbfa6a8-56e0-4dfe-9972-8c9020bb6b2a" config-ref="Database_Config">
+			<db:sql ><![CDATA[select max("id") from hotels]]></db:sql>
+		</db:select>
+		<choice doc:name="Choice" doc:id="3b792f36-11e6-402a-ae55-c6992f71802e" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="60aa283c-d90b-4388-b55d-5af05195802a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0 
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#getMaxIDResponse: {
+		id: payload[0].max
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="No Data Found" doc:id="9f6941b6-dc9c-434b-b536-deadf80d8d92" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No ID in hotels"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="b424c283-120e-4d14-b846-432f5ce82d47" message='"End of get Max Id Service"'/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9c96a7d7-17f1-4369-afc1-00a8d7df04ed" type="ANY" >
+				<logger level="INFO" doc:name="Error Log" doc:id="c45530f1-01e7-4ff6-9c23-6e20fbe697f0" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="map Error" doc:id="b8708370-0d78-434e-9613-a801b38eece3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="getMaxBookingIdFlow" doc:id="284c7947-bc2f-4403-bd50-1223763ae52c">
+		<logger level="INFO" doc:name="Logger" doc:id="a42a362d-cd40-4d6a-bb98-6722730b471d" message='"Start of Max Booking Id service"' />
+		<db:select doc:name="Select" doc:id="ff14d9a9-ae77-45fe-ab28-8ef24ac92223" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select max("bookingid") from bookings]]></db:sql>
+		</db:select>
+		<choice doc:name="Choice" doc:id="c5e0e68e-44fa-4ac9-9bca-ac100217bff0" >
+			<when expression="#[sizeOf(payload) &gt; 0]" >
+				<ee:transform doc:name="Transform Message" doc:id="f346ced8-5c06-4113-981a-a9456e9652fe" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#getMaxBookingIdResponse: {
+		bookingid: payload[0].max
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="No Data Found" doc:id="741cf785-1b7e-4bcf-9508-b4c86c4da6c3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No booking ID in bookings"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="c3e6495a-60fe-4d2e-802a-e65c82e3b064" message='"End of Max Booking Id service"'/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2e6078a5-b8a3-4d09-88a1-a69bbeb4d04d" type="ANY" >
+				<logger level="INFO" doc:name="Error Log" doc:id="63f4abcc-da5f-41e1-a463-94700f6b8a78" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="map Error" doc:id="64259df5-702c-4720-ab4d-85f00f9a6e08" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="getAvailabilityHotelsFlow" doc:id="f32f3ecc-3730-493d-8517-ab387977173b" >
+		<logger level="INFO" doc:name="Logger" doc:id="05645f62-b23c-4ec0-b144-5dd6dcd77190" message='"Start of get availability service" #[payload.body.getAvailability.id]'/>
+		<db:select doc:name="Select" doc:id="59fb4fd1-e786-406a-b2fe-fa03679bb419" config-ref="Database_Config">
+			<db:sql ><![CDATA[select availablerooms from hotels where "id"= :id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id" : payload.body.getAvailability.id
+}]]]></db:input-parameters>
+		</db:select>
+		<logger level="INFO" doc:name="Logger" doc:id="f4f40ce8-9fff-4d6e-89d1-d9d62a0e2f60" message="#[payload]"/>
+		<choice doc:name="Choice" doc:id="5db29666-a2fd-4c45-869d-b6a6c4707e80" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="7d99e4df-a5a6-470b-9ac4-b65dba2b5ad4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#getAvailabilityResponse: {
+		availability: payload[0].availablerooms
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="No Data Found" doc:id="5b9dd179-48f3-41a5-852b-3f9e78140f92" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No availability available for specified ID in hotels"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="b733ad2a-4f85-4f89-a20c-e62d155240f2" message='"End of get availability service"' />
+	</flow>
+	<sub-flow name="setPayloadSub_Flow" doc:id="b885ec5c-1199-4a58-aff7-fafa9b6969cd" >
+		<set-variable value="#[payload]" doc:name="Set Payload" doc:id="42e49997-3217-428b-abb0-cd0ccf8534f0" variableName="inputData" />
+	</sub-flow>
+	<flow name="addHotelsFlow" doc:id="652337ad-e625-44fc-bcb1-05813330fc5a" >
+		<ee:transform doc:name="Transform Message" doc:id="3be27a33-d22b-46a5-b761-ffffe4791758" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"id": payload.body.addHotels.hotel.id as Number,
+	"name": payload.body.addHotels.hotel.name default "",
+	"hotelnumber": payload.body.addHotels.hotel.number default "",
+	"description": payload.body.addHotels.hotel.description default "",
+	"propertyhighlights": payload.body.addHotels.hotel.propertyhighlights default "",
+	"rating": payload.body.addHotels.hotel.rating default 0,
+	"hotelTypes": write(payload.body.addHotels.hotel.*bookingtypes map (item, index) ->{
+		"bookingtype" : item.bookingtype
+	}, "application/json") ,
+	"rules": write(payload.body.addHotels.hotel.*rules map(item, index) -> {
+		"rule": item.rule
+	}, "application/json"),
+	"availablerooms": payload.body.addHotels.hotel.availability,
+	"startdate": payload.body.addHotels.hotel.startDate default "",
+	"enddate": payload.body.addHotels.hotel.endDate default "",
+	"starttime": payload.body.addHotels.hotel.startTime default "",
+	"endtime": payload.body.addHotels.hotel.endTime default "",
+	"destination": payload.body.addHotels.hotel.destination.locationCode default "",
+	"roomTypes": write(payload.body.addHotels.hotel.*roomTypes map(item, index) -> {
+		"roomtype" : item.roomType
+	}, "application/json"),
+	"bedSize": write(payload.body.addHotels.hotel.*bedSize map (item,index)->item, "application/json"),
+	"price": write(payload.body.addHotels.hotel.*price map(item,index) -> {
+		"baseFare" : item.baseFare,
+		"taxes" : item.taxes,
+		"total" : item.total,
+		"bookingtype" : item.bookingtype
+	}, "application/json"),
+	"currency":payload.body.addHotels.hotel.currency,
+	"availableCoupons": write(payload.body.addHotels.hotel.*availableCoupons map(item, index) -> {
+		"code" : item.code,
+		"description" : item.description,
+		"rule" : item.rule
+	}, "application/json"),
+	"cancellationPolicy": write(payload.body.addHotels.hotel.*cancellationPolicy map(item, index) -> {
+		"timeFrame" : item.timeFrame,
+		"charges" : item.charges
+	}, "application/json"),
+	"reschedulePolicy":write(payload.body.addHotels.hotel.*reschedulePolicy map(item, index) -> {
+		"timeFrame" : item.timeFrame,
+		"charges" : item.charges
+	}, "application/json"),
+	"locationdesc": payload.body.addHotels.hotel.destination.locationDescription default "",
+	"imagestype": write(payload.body.addHotels.hotel.*images map(item, index) -> {"image":item.image}, "application/json")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="set Payload" doc:id="ec606f83-c0e2-40ca-be59-8920a151b8ec" name="setPayloadSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="2aefc805-88f9-4931-b5e9-746b458c29e2" message='"Start of add hotels" #[payload.id] #[payload]'/>
+		<db:insert doc:name="Insert" doc:id="65fc78c0-056d-43fe-a0c3-1dfa2ec3f264" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into hotels (id, name, hotelnumber, description, destination, propertyhighlights, rating, hoteltypes, rules, availablerooms, startdate, enddate, roomtypes, bedsize, price, currency, availablecoupons, cancellationpolicy, reschedulepolicy, starttime, endtime, locationdesc, imagestype) values ( :id, :name, :hotelnumber, :description, :destination, :propertyhighlights, :rating, :hotelTypes, :rules, :availablerooms, :startdate, :enddate, :roomtypes, :bedsize, :price, :currency, :availablecoupons, :cancellationpolicy, :reschedulepolicy, :starttime, :endtime, :locationdesc, :imagestype)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id" : payload.id,
+	"name":payload.name, 
+	"hotelnumber":payload.hotelnumber, 
+	"description":payload.description, 
+	"destination":payload.destination, 
+	"propertyhighlights":payload.propertyhighlights, 
+	"rating":payload.rating, 
+	"hotelTypes":payload.hotelTypes, 
+	"rules":payload.rules, 
+	"availablerooms":payload.availablerooms, 
+	"startdate":payload.startdate, 
+	"enddate":payload.enddate, 
+	"roomtypes":payload.roomTypes, 
+	"bedsize":payload.bedSize, 
+	"price":payload.price, 
+	"currency":payload.currency, 
+	"availablecoupons":payload.availableCoupons, 
+	"cancellationpolicy":payload.cancellationPolicy, 
+	"reschedulepolicy":payload.reschedulePolicy, 
+	"starttime":payload.starttime, 
+	"endtime":payload.endtime, 
+	"locationdesc":payload.locationdesc, 
+	"imagestype":payload.imagestype
+}]]]></db:input-parameters>
+		</db:insert>
+		<choice doc:name="Choice" doc:id="b29d7ead-ad6c-4078-a6e6-efb6a0e6bf92" >
+			<when expression="#[payload.affectedRows == 1]">
+				<ee:transform doc:name="Insert Response" doc:id="1dffc594-f539-4f40-aadf-3aa15b49aa40" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns htl http://www.bookmyholiday.com/hotels/
+---
+{
+	htl#addHotelsResponse: {
+		htl#id: vars.inputData.id as Number,
+		htl#message: "Hotels added successfully"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="no insert" doc:id="866c0bd6-7803-4b66-8f98-3f3b5b3642f3" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "No Hotels added"
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="b9e7ea17-31d0-41d1-b0c5-abd03c624a79" message='"End of add hotels" #[vars.inputData.id]' />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="ac62c7c7-d7e1-4b85-ab34-366d4ec014a0" type="ANY">
+				<logger level="INFO" doc:name="Error Log" doc:id="441b5f79-2044-432d-b2ea-2df2b4af5450" message='"Error:"#[error.description]' />
+				<ee:transform doc:name="map Error" doc:id="8f941ec0-3ffd-442a-8f3b-35de69c4e2d8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0 
+output application/xml
+ns soap http://www.bookmyholiday.com/hotels/
+---
+{
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: error.description
+        }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

@@ -1,0 +1,11 @@
+%dw 2.0
+// namespaces
+ns ns0 http://www.bookmyholiday.com/hotels/
+
+type auto_284c7947_bc2f_4403_bd50_1223763ae52c_Output_Payload = {|
+  ns0#Fault: {|
+    faultcode: String, 
+    faultstring: String | Null
+  |}
+|}
+
