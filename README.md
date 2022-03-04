@@ -1,1 +1,0 @@
-# sys-bookmyholiday-hotels-api

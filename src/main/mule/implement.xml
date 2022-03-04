@@ -35,16 +35,16 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="b26411f9-1599-4aa6-869c-4fba7061fedb" message='"Start of the Update booking " #[payload.bookingid]'/>
+		<logger level="INFO" doc:name="start Logger" doc:id="b26411f9-1599-4aa6-869c-4fba7061fedb" message='"Start of the Update booking " #[payload.bookingid] #[payload]'/>
 		<flow-ref doc:name="set Payload" doc:id="fc74eecc-4b37-4986-a38e-d5367b88067a" name="setPayloadSub_Flow"/>
 		<set-variable value="#[payload.serviceid]" doc:name="Set Hotel Id" doc:id="807dae40-dfc7-49d6-8803-2f77101d8015" variableName="hotelid"/>
 		<set-variable value="#[payload.bookingid]" doc:name="Set Booking id" doc:id="f2da0a8e-a5ba-469d-92f5-9e3c8f1f7e3c" variableName="bookingid"/>
 		<choice doc:name="Choice" doc:id="8cf52df2-195b-42d9-9456-24a855631978" >
 			<when expression='#[payload.isCancel == "true"]'>
-				<logger level="INFO" doc:name="Logger" doc:id="63d1108e-0b10-4f06-b8cf-5c21dc9c4703" message="Start of Cancel Flight flow"/>
+				<logger level="INFO" doc:name="Logger" doc:id="63d1108e-0b10-4f06-b8cf-5c21dc9c4703" message="Start of Cancel Hotel flow"/>
 				<try doc:name="Try" doc:id="ab372d22-1d43-4ad4-a4c5-3f3df84e8619" transactionalAction="ALWAYS_BEGIN">
 					<set-variable value="#[(payload.availableRooms + payload.noOfRooms)]" doc:name="Set updated availability" doc:id="0497e9b3-678f-47cd-b8b4-4b18aa7ee7f3" variableName="updatedavailability"/>
-					<db:delete doc:name="Delete" doc:id="59d8654c-fa0e-4fbd-bb79-12b39736cd99" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+					<db:delete doc:name="Delete from booking" doc:id="59d8654c-fa0e-4fbd-bb79-12b39736cd99" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
 						<db:sql ><![CDATA[delete from bookings where "bookingid" = :bookingid]]></db:sql>
 						<db:input-parameters ><![CDATA[#[{
 	"bookingid" : payload.bookingid
@@ -52,7 +52,7 @@ output application/json
 					</db:delete>
 					<choice doc:name="Choice" doc:id="89115d2a-790b-413d-9ba9-a5162aea1efa" >
 						<when expression="#[payload == 1]">
-							<db:update doc:name="Update" doc:id="9a283d26-21ec-417b-91ef-528e8727e227" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+							<db:update doc:name="Update available rooms" doc:id="9a283d26-21ec-417b-91ef-528e8727e227" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
 								<db:sql ><![CDATA[update hotels set "availablerooms" = :availablerooms where "id" = :id]]></db:sql>
 								<db:input-parameters ><![CDATA[#[{
 	"availablerooms" : vars.updatedavailability,
@@ -73,6 +73,7 @@ ns htl http://www.bookmyholiday.com/hotels/
 }]]></ee:set-payload>
 								</ee:message>
 							</ee:transform>
+							<logger level="INFO" doc:name="responseLogger" doc:id="402fda3c-5451-4edf-b0a8-d2502e5fbc3d" message='"Response to send " #[payload]'/>
 						</when>
 						<otherwise >
 							<ee:transform doc:name="no cancel" doc:id="a93deff9-190d-4cb5-a6f8-f7f955251918" >
@@ -94,10 +95,10 @@ ns soap http://www.bookmyholiday.com/hotels/
 				</try>
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="3475b6e4-7fa5-4af6-8e12-8ad848847961" message="Start of Reschedule Flight flow" />
+				<logger level="INFO" doc:name="reschedule Logger" doc:id="3475b6e4-7fa5-4af6-8e12-8ad848847961" message="Start of Reschedule Flight flow" />
 				<choice doc:name="Choice" doc:id="6d1a1208-b295-4ecc-895a-bc6995d3a223" >
 					<when expression="#[payload.updatedRooms &gt; 0]">
-						<ee:transform doc:name="Transform Message" doc:id="12f7391a-ddb8-4b50-b6b6-d78a237d91aa">
+						<ee:transform doc:name="map update query" doc:id="12f7391a-ddb8-4b50-b6b6-d78a237d91aa">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 import * from dw::core::Strings
@@ -118,10 +119,10 @@ var data=(if (payload.name != null) ('name=\'' ++ payload.name ++ '\',') else ''
 
 output application/java
 ---
-(if(data endsWith ',') (substring(data,0,sizeOf(data)-1) replace "\"" with "") else (data replace "\"" with ""))]]></ee:set-payload>
+(if(data endsWith ',') (substring(data,0,sizeOf(data)-1)) else data )]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-						<logger level="INFO" doc:name="Logger" doc:id="0f6ba3f3-ee43-4bed-8505-0a190cfbab64" message='"Query is: " #[payload]'/>
+						<logger level="INFO" doc:name="update Logger" doc:id="0f6ba3f3-ee43-4bed-8505-0a190cfbab64" message='"Query is: " #[payload]'/>
 						<set-variable value="#[payload]" doc:name="Set query" doc:id="4e38e5cb-3cc5-42a1-b5fd-dd7301d096e4" variableName="updatedquery"/>
 						<try doc:name="Try" doc:id="adb9af16-4d13-4c38-a180-3d2cae4ea102" transactionalAction="ALWAYS_BEGIN">
 							<db:update doc:name="Update Booking" doc:id="14804948-ce87-4a87-9c9b-91436e7ba230" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
@@ -153,6 +154,7 @@ ns htl http://www.bookmyholiday.com/hotels/
 }]]></ee:set-payload>
 										</ee:message>
 									</ee:transform>
+									<logger level="INFO" doc:name="Response Logger" doc:id="294e0c0c-d53b-4974-b307-7fc595bb6d98" message='"Response to send " #[payload]'/>
 								</when>
 								<otherwise >
 									<ee:transform doc:name="no reschedule" doc:id="8ae5a5c3-25c0-4f3f-9e5d-e83d9fc16b0f" >
@@ -174,7 +176,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 						</try>
 					</when>
 					<otherwise >
-						<ee:transform doc:name="Transform Message" doc:id="09b17a2e-f0c4-4b12-8cd9-6021d63a499f">
+						<ee:transform doc:name="map update query" doc:id="09b17a2e-f0c4-4b12-8cd9-6021d63a499f">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
 import * from dw::core::Strings
@@ -195,9 +197,10 @@ var data=(if (payload.name != null) ('name=\'' ++ payload.name ++ '\',') else ''
 
 output application/java
 ---
-(if(data endsWith ',') (substring(data,0,sizeOf(data)-1) replace "\"" with "") else (data replace "\"" with ""))]]></ee:set-payload>
+(if(data endsWith ',') (substring(data,0,sizeOf(data)-1)) else data)]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
+						<logger level="INFO" doc:name="update Logger" doc:id="c0b38e10-7cf2-4f93-a42d-307f5dffde34" message='"Updated query " #[payload]'/>
 						<set-variable value="#[payload]" doc:name="Set query" doc:id="8e021b85-f99d-43da-8626-e58257bed9ed" variableName="updatedquery" />
 						<db:update doc:name="Update Booking" doc:id="6677781d-f96b-4417-90f9-e2b8493835ef" config-ref="Database_Config">
 							<db:sql ><![CDATA[#["update bookings set $(vars.updatedquery) where bookingid= :bookingid"]]]></db:sql>
@@ -221,6 +224,7 @@ ns htl http://www.bookmyholiday.com/hotels/
 }]]></ee:set-payload>
 									</ee:message>
 								</ee:transform>
+								<logger level="INFO" doc:name="response Logger" doc:id="d5e2fbb1-f6a2-44b6-bcda-c3fe1cadfb1a" message='"Response Logger " #[payload]'/>
 							</when>
 							<otherwise >
 								<ee:transform doc:name="no reschedule" doc:id="24ce4f30-6956-4b01-8497-2e350b374d3f" >
@@ -243,7 +247,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 				</choice>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="Logger" doc:id="c20a4e05-38d7-4ac5-a739-760ff07f2ced" message='"End of the Update booking " #[vars.inputData.bookingid]' />
+		<logger level="INFO" doc:name="end Logger" doc:id="c20a4e05-38d7-4ac5-a739-760ff07f2ced" message='"End of the Update booking " #[vars.inputData.bookingid]' />
 		<error-handler >
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="913b4ec8-9aa1-48db-88de-39602bda0b5f" type="ANY" >
 				<logger level="INFO" doc:name="Error Log" doc:id="bce2f7df-2392-4874-9488-91a27a24d064" message='"Error:"#[error.description]' />
@@ -318,9 +322,9 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="b32a1f99-7c80-416f-8de2-7f11e0da1319" message='"Start of update hotels for hotel id " #[payload.id]' />
+		<logger level="INFO" doc:name="start Logger" doc:id="b32a1f99-7c80-416f-8de2-7f11e0da1319" message='"Start of update hotels for hotel id " #[payload.id]' />
 		<set-variable value="#[payload.id]" doc:name="Set Id" doc:id="d2e59046-7d6e-42ba-8221-c7f36a526452" variableName="id"/>
-		<ee:transform doc:name="Transform Message" doc:id="b145a3ef-a2e4-4ab4-9d19-e04d41808a7f" >
+		<ee:transform doc:name="map update query" doc:id="b145a3ef-a2e4-4ab4-9d19-e04d41808a7f" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 import * from dw::core::Strings
@@ -353,7 +357,7 @@ if(data endsWith ',') (substring(data,0,sizeOf(data)-1)) else data]]></ee:set-pa
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="set Payload" doc:id="14f71601-5fca-4156-b1b5-36d93017b978" name="setPayloadSub_Flow"/>
-		<logger level="INFO" doc:name="Logger" doc:id="16096c3f-0cda-4b10-b228-460a80723265" message='"Hotels to Update:" #[payload]'/>
+		<logger level="INFO" doc:name="update Logger" doc:id="16096c3f-0cda-4b10-b228-460a80723265" message='"Hotels to Update:" #[payload]'/>
 		<db:update doc:name="Update" doc:id="2b42b4a7-4283-4547-93ba-fc82322a1238" config-ref="Database_Config">
 			<db:sql ><![CDATA[#["update hotels set $(vars.inputData) where id= :id"]]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
@@ -375,6 +379,7 @@ ns htl http://www.bookmyholiday.com/hotels/
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<logger level="INFO" doc:name="response Logger" doc:id="62d31518-d2cb-4bfd-9c74-be634785b0d0" message='"Response to send " #[payload]'/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="no update" doc:id="6cf130f4-585c-4461-852d-40edba8027c8" >
@@ -415,7 +420,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 		</error-handler>
 	</flow>
 	<flow name="selectFlow" doc:id="958cfd2f-7c9b-4088-a179-fa6c5a1cdef3" >
-		<logger level="INFO" doc:name="Logger" doc:id="5cf20c81-189f-48a4-9980-c2e25eee3058" message='"Start of Flow with destination :" #[payload.body.getHotels.destination]'/>
+		<logger level="INFO" doc:name="start Logger" doc:id="5cf20c81-189f-48a4-9980-c2e25eee3058" message='"Start of get Hotels Flow with destination :" #[payload.body.getHotels.destination]'/>
 		<validation:is-not-null doc:name="validateDestination" doc:id="3e54115c-592e-4ecd-a2e5-8e5c29a72f9e" value="#[payload.body.getHotels.destination]" message="Destination is null">
 			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:NODEST" />
 		</validation:is-not-null>
@@ -436,6 +441,7 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<logger level="INFO" doc:name="Request Logger" doc:id="4785d093-f22d-4e04-8142-c61c006650f2" message='"Request to send " #[payload]'/>
 		<db:select doc:name="Select" doc:id="fdcdddc2-5feb-4777-b917-0d82f0de146c" config-ref="Database_Config">
 			<db:sql ><![CDATA[select * from hotels where startdate= :startDate and enddate= :endDate and destination= :destination and availablerooms >= :noOfRooms]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
@@ -447,7 +453,7 @@ output application/json
 		</db:select>
 		<choice doc:name="Choice" doc:id="f67dbefe-ed8d-4fca-9097-b4c2496d64e1" >
 			<when expression="#[sizeOf(payload) &gt; 0]">
-				<logger level="INFO" doc:name="Logger" doc:id="9142ec4b-6bf2-4951-81b2-f6ad66faa8d1" message='"Payload Received: "#[payload]' />
+				<logger level="INFO" doc:name="Response Logger" doc:id="9142ec4b-6bf2-4951-81b2-f6ad66faa8d1" message='"Payload Received: "#[payload]' />
 				<ee:transform doc:name="Result Completed" doc:id="da26c4b2-ce75-4c44-9eb5-02eed5054ffa">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0 
@@ -512,7 +518,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="Logger" doc:id="c485d912-3843-40d7-9ef4-3253197b4e04" message='"End of get Hotel flow"'/>
+		<logger level="INFO" doc:name="End Logger" doc:id="c485d912-3843-40d7-9ef4-3253197b4e04" message='"End of get Hotel flow"'/>
 		<error-handler >
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="1c64d18c-e943-44cc-a134-9e9e8b0c0d93" type="APP:NODEST">
 				<logger level="INFO" doc:name="Logger" doc:id="d367d8ea-9739-4e2e-bf7d-620a5a3a05ce" message='"No Destination Provided"'/>
@@ -568,7 +574,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 		</error-handler>
 	</flow>
 	<flow name="selectDetailsFlow" doc:id="dad3ac73-20f4-406a-a8ab-903c0ee602a0" >
-		<logger level="INFO" doc:name="Logger" doc:id="b5828ccf-c84d-4ab8-9e0d-c48754923376" message='"Start of flow with id " #[payload.body.getHotelDetails.id]'/>
+		<logger level="INFO" doc:name="start Logger" doc:id="b5828ccf-c84d-4ab8-9e0d-c48754923376" message='"Start of flow with id " #[payload.body.getHotelDetails.id]'/>
 		<validation:is-not-null doc:name="Is not null" doc:id="e65b532f-a917-4aa1-bcb0-ed2ce7d81815" value="#[payload.body.getHotelDetails.id]" message="Flight id must exist">
 			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:IDERROR" />
 		</validation:is-not-null>
@@ -580,6 +586,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 		</db:select>
 		<choice doc:name="Choice" doc:id="9e185c8a-de7a-4b0c-b8c4-29febf319119" >
 			<when expression="#[sizeOf(payload) &gt; 0]">
+				<logger level="INFO" doc:name="Request Logger" doc:id="9f1453c8-126f-4d07-a1bf-931732bf4931" message='"Request received " #[payload]'/>
 				<ee:transform doc:name="Transform Message" doc:id="b03be4cc-5563-4be6-b3a7-e7ea9b10bd9a" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -662,8 +669,10 @@ ns htl http://www.bookmyholiday.com/hotels/
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<logger level="INFO" doc:name="Response Logger" doc:id="77d9934b-0d2a-4d59-97cf-0752b5e3a0ae" message='"Response Send " #[payload]'/>
 			</when>
 			<otherwise >
+				<logger level="INFO" doc:name="No data Logger" doc:id="fb475282-3e8f-4b89-8417-1325446f0fce" message='"No Data Found "'/>
 				<ee:transform doc:name="No Data Found" doc:id="f974588a-279c-45ae-a706-21a7acb65b72" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0 
@@ -719,7 +728,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 		</error-handler>
 	</flow>
 	<flow name="addBookingFlow" doc:id="a3bf85da-e0a3-4846-b2b9-4a5a069e68cd" >
-		<ee:transform doc:name="Transform Message" doc:id="b50c3e5e-09d9-41bd-86bc-84f099d3577c" >
+		<ee:transform doc:name="map to json" doc:id="b50c3e5e-09d9-41bd-86bc-84f099d3577c" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
@@ -753,10 +762,10 @@ output application/java
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="a204605b-7a02-41f6-bbb8-2b4d8d6c144d" message='"Start of add booking flow for booking number : " #[payload.bookingid]' />
+		<logger level="INFO" doc:name="start Logger" doc:id="a204605b-7a02-41f6-bbb8-2b4d8d6c144d" message='"Start of add booking flow for booking number : " #[payload.bookingid] #[payload]' />
 		<set-variable value="#[payload]" doc:name="setInputData" doc:id="0392cb95-2873-47b9-991e-1fb065686f0b" variableName="inputData"/>
 		<try doc:name="Try" doc:id="bbe5fe1a-f179-437b-83c0-094cf3424667" transactionalAction="ALWAYS_BEGIN">
-			<db:insert doc:name="Insert" doc:id="7ce33b52-dba5-406b-a977-8238d120f958" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
+			<db:insert doc:name="Insert into bookings" doc:id="7ce33b52-dba5-406b-a977-8238d120f958" config-ref="Database_Config" transactionalAction="ALWAYS_JOIN">
 			<db:sql><![CDATA[insert into bookings ( username, fname, lname, contactnumber, servicename, bookingid, pnr, servicenumber, serviceid, startdate, enddate, starttime, endtime, destination, noofpassengers, couponapplied, couponname, price, hoteltype, noofdays, noofrooms, roomtype, bedsize, insurance) values (:username, :fname, :lname, :contactnumber, :servicename, :bookingid, :pnr, :servicenumber, :serviceid, :startdate, :enddate, :starttime, :endtime, :destination, :noOfPassengers, :couponApplied, :couponName, :price, :hotelType, :noOfDays, :noOfRooms, :roomType, :bedSize, :insurance)]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
 	"username":payload.username, "fname":payload.fname, "lname":payload.lname, "contactnumber":payload.contactnumber, "servicename":payload.servicename, "bookingid":payload.bookingid, "pnr":payload.pnr, "servicenumber":payload.servicenumber, "serviceid":payload.serviceid, "startdate":payload.startdate, "enddate":payload.enddate, "starttime":payload.starttime, "endtime":payload.endtime, "destination":payload.destination, "noOfPassengers":payload.noOfPassengers, "couponApplied":payload.couponApplied, "couponName":payload.couponName, "price":payload.price, "hotelType":payload.hotelType, "noOfDays":payload.noOfDays, "noOfRooms":payload.noOfRooms, "roomType":payload.roomType, "bedSize":payload.bedSize, "insurance":payload.insurance
@@ -787,6 +796,7 @@ ns htl http://www.bookmyholiday.com/hotels/
 }]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
+							<logger level="INFO" doc:name="Response Logger" doc:id="5b2d9b5c-e0f8-4c1a-b281-7fd85e6499a0" message='"Response to send " #[payload]'/>
 					</when>
 					<otherwise>
 						<ee:transform doc:name="no Update" doc:id="d7575f85-80d3-446f-adaa-41c0956d20f4">
@@ -829,7 +839,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 				</on-error-propagate>
 			</error-handler>
 		</try>
-		<logger level="INFO" doc:name="Logger" doc:id="b7f2e564-22c5-48df-900a-3ba201c36868" message='"End of add booking flow for booking number : " #[vars.inputData.bookingid]' />
+		<logger level="INFO" doc:name="End Logger" doc:id="b7f2e564-22c5-48df-900a-3ba201c36868" message='"End of add booking flow for booking number : " #[vars.inputData.bookingid]' />
 		<error-handler >
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="00a40191-7511-4726-8a9a-2a15a7e8e591" type="ANY">
 				<logger level="INFO" doc:name="Error Log" doc:id="92b27b23-a66f-4cf7-8b3f-95f3ac97ed1d" message='"Error:"#[error.description]' />
@@ -851,7 +861,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 		</error-handler>
 	</flow>
 	<flow name="getMaxIdFlow" doc:id="31e85525-7e18-44b5-8451-63ed9bc182a4" >
-		<logger level="INFO" doc:name="Logger" doc:id="1ac14f4d-5e8e-4b7b-8c15-636104231e2f" message='"Start of Max Id service"'/>
+		<logger level="INFO" doc:name="start Logger" doc:id="1ac14f4d-5e8e-4b7b-8c15-636104231e2f" message='"Start of Max Id service"'/>
 		<db:select doc:name="Select" doc:id="acbfa6a8-56e0-4dfe-9972-8c9020bb6b2a" config-ref="Database_Config">
 			<db:sql ><![CDATA[select max("id") from hotels]]></db:sql>
 		</db:select>
@@ -888,7 +898,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="Logger" doc:id="b424c283-120e-4d14-b846-432f5ce82d47" message='"End of get Max Id Service"'/>
+		<logger level="INFO" doc:name="end Logger" doc:id="b424c283-120e-4d14-b846-432f5ce82d47" message='"End of get Max Id Service"'/>
 		<error-handler >
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9c96a7d7-17f1-4369-afc1-00a8d7df04ed" type="ANY" >
 				<logger level="INFO" doc:name="Error Log" doc:id="c45530f1-01e7-4ff6-9c23-6e20fbe697f0" message='"Error:"#[error.description]' />
@@ -910,7 +920,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 		</error-handler>
 	</flow>
 	<flow name="getMaxBookingIdFlow" doc:id="284c7947-bc2f-4403-bd50-1223763ae52c">
-		<logger level="INFO" doc:name="Logger" doc:id="a42a362d-cd40-4d6a-bb98-6722730b471d" message='"Start of Max Booking Id service"' />
+		<logger level="INFO" doc:name="start Logger" doc:id="a42a362d-cd40-4d6a-bb98-6722730b471d" message='"Start of Max Booking Id service"' />
 		<db:select doc:name="Select" doc:id="ff14d9a9-ae77-45fe-ab28-8ef24ac92223" config-ref="Database_Config" >
 			<db:sql ><![CDATA[select max("bookingid") from bookings]]></db:sql>
 		</db:select>
@@ -947,7 +957,7 @@ ns soap http://www.bookmyholiday.com/hotels/
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="Logger" doc:id="c3e6495a-60fe-4d2e-802a-e65c82e3b064" message='"End of Max Booking Id service"'/>
+		<logger level="INFO" doc:name="end Logger" doc:id="c3e6495a-60fe-4d2e-802a-e65c82e3b064" message='"End of Max Booking Id service"'/>
 		<error-handler >
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2e6078a5-b8a3-4d09-88a1-a69bbeb4d04d" type="ANY" >
 				<logger level="INFO" doc:name="Error Log" doc:id="63f4abcc-da5f-41e1-a463-94700f6b8a78" message='"Error:"#[error.description]' />
@@ -969,17 +979,17 @@ ns soap http://www.bookmyholiday.com/hotels/
 		</error-handler>
 	</flow>
 	<flow name="getAvailabilityHotelsFlow" doc:id="f32f3ecc-3730-493d-8517-ab387977173b" >
-		<logger level="INFO" doc:name="Logger" doc:id="05645f62-b23c-4ec0-b144-5dd6dcd77190" message='"Start of get availability service" #[payload.body.getAvailability.id]'/>
+		<logger level="INFO" doc:name="start Logger" doc:id="05645f62-b23c-4ec0-b144-5dd6dcd77190" message='"Start of get availability service" #[payload.body.getAvailability.id]'/>
 		<db:select doc:name="Select" doc:id="59fb4fd1-e786-406a-b2fe-fa03679bb419" config-ref="Database_Config">
 			<db:sql ><![CDATA[select availablerooms from hotels where "id"= :id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	"id" : payload.body.getAvailability.id
 }]]]></db:input-parameters>
 		</db:select>
-		<logger level="INFO" doc:name="Logger" doc:id="f4f40ce8-9fff-4d6e-89d1-d9d62a0e2f60" message="#[payload]"/>
+		<logger level="INFO" doc:name="request logger" doc:id="f4f40ce8-9fff-4d6e-89d1-d9d62a0e2f60" message="#[payload]"/>
 		<choice doc:name="Choice" doc:id="5db29666-a2fd-4c45-869d-b6a6c4707e80" >
 			<when expression="#[sizeOf(payload) &gt; 0]">
-				<ee:transform doc:name="Transform Message" doc:id="7d99e4df-a5a6-470b-9ac4-b65dba2b5ad4" >
+				<ee:transform doc:name="map to target" doc:id="7d99e4df-a5a6-470b-9ac4-b65dba2b5ad4" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0 
 output application/xml
@@ -1010,13 +1020,13 @@ ns soap http://www.bookmyholiday.com/hotels/
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="Logger" doc:id="b733ad2a-4f85-4f89-a20c-e62d155240f2" message='"End of get availability service"' />
+		<logger level="INFO" doc:name="end Logger" doc:id="b733ad2a-4f85-4f89-a20c-e62d155240f2" message='"End of get availability service"' />
 	</flow>
 	<sub-flow name="setPayloadSub_Flow" doc:id="b885ec5c-1199-4a58-aff7-fafa9b6969cd" >
 		<set-variable value="#[payload]" doc:name="Set Payload" doc:id="42e49997-3217-428b-abb0-cd0ccf8534f0" variableName="inputData" />
 	</sub-flow>
 	<flow name="addHotelsFlow" doc:id="652337ad-e625-44fc-bcb1-05813330fc5a" >
-		<ee:transform doc:name="Transform Message" doc:id="3be27a33-d22b-46a5-b761-ffffe4791758" >
+		<ee:transform doc:name="map to request" doc:id="3be27a33-d22b-46a5-b761-ffffe4791758" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -1070,7 +1080,7 @@ output application/json
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="set Payload" doc:id="ec606f83-c0e2-40ca-be59-8920a151b8ec" name="setPayloadSub_Flow"/>
-		<logger level="INFO" doc:name="Logger" doc:id="2aefc805-88f9-4931-b5e9-746b458c29e2" message='"Start of add hotels" #[payload.id] #[payload]'/>
+		<logger level="INFO" doc:name="request Logger" doc:id="2aefc805-88f9-4931-b5e9-746b458c29e2" message='"Start of add hotels" #[payload.id] #[payload]'/>
 		<db:insert doc:name="Insert" doc:id="65fc78c0-056d-43fe-a0c3-1dfa2ec3f264" config-ref="Database_Config">
 			<db:sql ><![CDATA[insert into hotels (id, name, hotelnumber, description, destination, propertyhighlights, rating, hoteltypes, rules, availablerooms, startdate, enddate, roomtypes, bedsize, price, currency, availablecoupons, cancellationpolicy, reschedulepolicy, starttime, endtime, locationdesc, imagestype) values ( :id, :name, :hotelnumber, :description, :destination, :propertyhighlights, :rating, :hotelTypes, :rules, :availablerooms, :startdate, :enddate, :roomtypes, :bedsize, :price, :currency, :availablecoupons, :cancellationpolicy, :reschedulepolicy, :starttime, :endtime, :locationdesc, :imagestype)]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
@@ -1115,6 +1125,7 @@ ns htl http://www.bookmyholiday.com/hotels/
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<logger level="INFO" doc:name="response Logger" doc:id="966966b9-e1f6-4a19-95ae-2631d1860a91" message='"Response Paylaod " #[payload]'/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="no insert" doc:id="866c0bd6-7803-4b66-8f98-3f3b5b3642f3" >
